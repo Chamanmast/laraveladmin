@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Backend\SettingsController;
+use App\Http\Controllers\Frontend\IndexController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -13,8 +14,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('dashboard/page');
     })->name('dashboard');
     Route::get('settings/settings', [SettingsController::class, 'index'])->name('settings');
-    Route::patch('settings/settings', [SettingsController::class, 'update'])->name('settings.update');
+    Route::post('settings/settings', [SettingsController::class, 'update'])->name('settings.update');
 });
+
+// Route::get('test', [IndexController::class, 'index'])->name('test');
+// Route::post('test', [IndexController::class, 'submit'])->name('test.submit');
+
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

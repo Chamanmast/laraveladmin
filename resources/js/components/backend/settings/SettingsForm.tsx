@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
+import SettingsController from '@/actions/App/Http/Controllers/Backend/SettingsController';
 import { useForm } from '@inertiajs/react';
 import { SiteSetting } from '@/types/site-setting';
 import { Input } from '@/components/ui/input';
@@ -6,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import InputError from '@/components/input-error';
 import { Transition } from '@headlessui/react';
+
 
 interface SettingsFormProps {
   settings: SiteSetting;
@@ -32,7 +34,7 @@ type SettingsFormData = {
 };
 
 const SettingsForm: React.FC<SettingsFormProps> = ({ settings }) => {
-  const { data, setData, patch, processing, errors, recentlySuccessful, clearErrors } =
+  const { data, setData, post, processing, errors, recentlySuccessful, clearErrors } =
     useForm<SettingsFormData>({
       site_title: settings.site_title || '',
       app_name: settings.app_name || '',
@@ -63,7 +65,11 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ settings }) => {
    e.preventDefault();
     // If you use a named route: patch(route('settings.update'));
     // If you post to a path directly, ensure the method matches your route (PATCH/POST)
-    patch('/settings/settings', {
+     post(SettingsController.update.url(), {
+          data: {
+        ...data,
+        _method: 'PUT' // Laravel method spoofing
+      },
       preserveScroll: true,
       // forceFormData ensures files are sent as multipart/form-data
       forceFormData: true,
@@ -87,7 +93,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ settings }) => {
   // Local preview state for existing or selected images
   const [logoPreview, setLogoPreview] = useState<string | null>(settings.logo ?? null);
   const [faviconPreview, setFaviconPreview] = useState<string | null>(settings.favicon ?? null);
-
+  const backslash='/';
   // When data.logo/data.favicon change to a File, create object URLs for preview
   useEffect(() => {
     let url: string | null = null;
@@ -135,7 +141,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ settings }) => {
             />
             <InputError message={errors.logo as unknown as string} />
             {logoPreview ? (
-              <img src={logoPreview} alt="logo preview" className="mt-2 h-12 w-auto object-contain" />
+              <img src={backslash+logoPreview} alt="logo preview" className="mt-2 h-12 w-auto object-contain" />
             ) : null}
           </div>
 
@@ -152,7 +158,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ settings }) => {
             />
             <InputError message={errors.favicon as unknown as string} />
             {faviconPreview ? (
-              <img src={faviconPreview} alt="favicon preview" className="mt-2 h-6 w-6 object-contain" />
+              <img src={backslash+faviconPreview} alt="favicon preview" className="mt-2 h-6 w-6 object-contain" />
             ) : null}
           </div>
         </div>
