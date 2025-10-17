@@ -80,6 +80,12 @@ const data = {
     },
 
      {
+      title: "SMTP",
+      url: "/settings/smtp",
+      icon: Settings2,
+      items: [],
+    },
+    {
       title: "Settings",
       url: "/settings/settings",
       icon: Settings2,

@@ -15,6 +15,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
     Route::get('settings/settings', [SettingsController::class, 'index'])->name('settings');
     Route::post('settings/settings', [SettingsController::class, 'update'])->name('settings.update');
+
+    Route::get('settings/smtp', [SettingsController::class, 'SmtpSetting'])->name('smtp.setting');
+    Route::post('settings/smtp', [SettingsController::class, 'UpdateSmtpSetting'])->name('update.smpt.setting');
+
 });
 
 // Route::get('test', [IndexController::class, 'index'])->name('test');
