@@ -39,10 +39,7 @@ const SmtpSettingsForm: React.FC<SmtpSettingsFormProps> = ({ settings }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     post(SmtpSettingsController.UpdateSmtpSetting.url(), {
-      data: {
-        ...data,
-        _method: 'PUT',
-      },
+       method: 'patch',
       preserveScroll: true,
       onSuccess: () => {
         // You could display a toast or notification

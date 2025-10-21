@@ -81,7 +81,12 @@ class SettingsController extends Controller
             'logo'             => $logoPath,
             'favicon'          => $faviconPath,
         ]);
-        return back()->with('success', 'Site Settings Updated Successfully');
+      $notification = [
+            'status' => 'success', // Can be 'error' or 'success'
+            'message' => 'Site Settings Updated Successfully',
+        ];
+
+        return back()->with('notification', $notification);
     }
 
     public function backchecker(string $path)
@@ -119,7 +124,7 @@ class SettingsController extends Controller
             'alert-type' => 'success'
         );
 
-        return redirect()->back()->with($notification);
+        return redirect()->back()->with('notification',$notification);
     }
 
 }

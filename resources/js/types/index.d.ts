@@ -24,7 +24,9 @@ export interface NavItem {
 
 export interface SharedData {
     name: string;
+    sitename: string;
     quote: { message: string; author: string };
+    flash: Notification;
     auth: Auth;
     sidebarOpen: boolean;
     [key: string]: unknown;
@@ -40,4 +42,9 @@ export interface User {
     created_at: string;
     updated_at: string;
     [key: string]: unknown; // This allows for additional properties...
+}
+
+export interface Notification {
+    status: 'success' | 'error';
+    message: string;
 }

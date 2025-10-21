@@ -1,47 +1,47 @@
-import React, { useRef, useState, useEffect } from 'react';
 import SettingsController from '@/actions/App/Http/Controllers/Backend/SettingsController';
-import { useForm } from '@inertiajs/react';
-import { SiteSetting, SettingsFormData } from '@/types/site-setting';
+import InputError from '@/components/input-error';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import InputError from '@/components/input-error';
+import { SettingsFormData, SiteSetting } from '@/types/site-setting';
+import { mapSiteSettingToFormData } from '@/utils/settings';
 import { Transition } from '@headlessui/react';
-import { mapSiteSettingToFormData } from "@/utils/settings";
+import { useForm } from '@inertiajs/react';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface SettingsFormProps {
     settings: SiteSetting;
 }
 
-
-
 const SettingsForm: React.FC<SettingsFormProps> = ({ settings }) => {
-    const { data, setData, post, processing, errors, recentlySuccessful, clearErrors } =
-        useForm<SettingsFormData>(mapSiteSettingToFormData(settings));
-    const handleFile = (name: 'logo' | 'favicon') => (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0] ?? null;
-        setData(name, file);
-        // clear prior validation error when user selects a new file
-        if (errors[name]) clearErrors(name);
-        // update preview URL handled by useEffect below
-    };
+    const {
+        data,
+        setData,
+        post,
+        processing,
+        errors,
+        recentlySuccessful,
+        clearErrors,
+    } = useForm<SettingsFormData>(mapSiteSettingToFormData(settings));
+    const handleFile =
+        (name: 'logo' | 'favicon') =>
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            const file = e.target.files?.[0] ?? null;
+            setData(name, file);
+            // clear prior validation error when user selects a new file
+            if (errors[name]) clearErrors(name);
+            // update preview URL handled by useEffect below
+        };
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // If you use a named route: patch(route('settings.update'));
-        // If you post to a path directly, ensure the method matches your route (PATCH/POST)
+
         post(SettingsController.update.url(), {
-            data: {
-                ...data,
-                _method: 'PUT' // Laravel method spoofing
-            },
+            method: 'patch',
             preserveScroll: true,
-            // forceFormData ensures files are sent as multipart/form-data
             forceFormData: true,
             onSuccess: () => {
-                // Optionally reset file inputs after success
                 setData('logo', null);
                 setData('favicon', null);
-                // clear actual file input elements and previews
                 if (logoInputRef.current) logoInputRef.current.value = '';
                 if (faviconInputRef.current) faviconInputRef.current.value = '';
                 setLogoPreview(settings.logo ?? null);
@@ -55,8 +55,12 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ settings }) => {
     const faviconInputRef = useRef<HTMLInputElement | null>(null);
 
     // Local preview state for existing or selected images
-    const [logoPreview, setLogoPreview] = useState<string | null>(settings.logo ?? null);
-    const [faviconPreview, setFaviconPreview] = useState<string | null>(settings.favicon ?? null);
+    const [logoPreview, setLogoPreview] = useState<string | null>(
+        settings.logo ?? null,
+    );
+    const [faviconPreview, setFaviconPreview] = useState<string | null>(
+        settings.favicon ?? null,
+    );
 
     // When data.logo/data.favicon change to a File, create object URLs for preview
     useEffect(() => {
@@ -86,12 +90,15 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ settings }) => {
     }, [data.favicon, settings.favicon]);
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-8" encType="multipart/form-data">
-
+        <form
+            onSubmit={handleSubmit}
+            className="space-y-8"
+            encType="multipart/form-data"
+        >
             {/* Logo upload */}
             <section className="space-y-4">
                 <h2 className="text-lg font-medium">Branding</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div className="grid gap-2">
                         <Label htmlFor="logo">Logo</Label>
                         <input
@@ -101,11 +108,17 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ settings }) => {
                             type="file"
                             accept="image/*"
                             onChange={handleFile('logo')}
-                            className="file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                            className="h-9 w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:bg-input/30"
                         />
-                        <InputError message={errors.logo as unknown as string} />
+                        <InputError
+                            message={errors.logo as unknown as string}
+                        />
                         {logoPreview ? (
-                            <img src={logoPreview} alt="logo preview" className="mt-2 h-12 w-auto object-contain" />
+                            <img
+                                src={logoPreview}
+                                alt="logo preview"
+                                className="mt-2 h-12 w-auto object-contain"
+                            />
                         ) : null}
                     </div>
 
@@ -118,11 +131,17 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ settings }) => {
                             type="file"
                             accept="image/x-icon,image/png,image/svg+xml,image/*"
                             onChange={handleFile('favicon')}
-                            className="file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                            className="h-9 w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:bg-input/30"
                         />
-                        <InputError message={errors.favicon as unknown as string} />
+                        <InputError
+                            message={errors.favicon as unknown as string}
+                        />
                         {faviconPreview ? (
-                            <img src={faviconPreview} alt="favicon preview" className="mt-2 h-6 w-6 object-contain" />
+                            <img
+                                src={faviconPreview}
+                                alt="favicon preview"
+                                className="mt-2 h-6 w-6 object-contain"
+                            />
                         ) : null}
                     </div>
                 </div>
@@ -130,14 +149,16 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ settings }) => {
             {/* General Info */}
             <section className="space-y-4">
                 <h2 className="text-lg font-medium">General Info</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div className="grid gap-2">
                         <Label htmlFor="site_title">Site Title</Label>
                         <Input
                             id="site_title"
                             name="site_title"
                             value={data.site_title}
-                            onChange={(e) => setData('site_title', e.target.value)}
+                            onChange={(e) =>
+                                setData('site_title', e.target.value)
+                            }
                             placeholder="My Website"
                             required
                         />
@@ -150,31 +171,39 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ settings }) => {
                             id="app_name"
                             name="app_name"
                             value={data.app_name}
-                            onChange={(e) => setData('app_name', e.target.value)}
+                            onChange={(e) =>
+                                setData('app_name', e.target.value)
+                            }
                             placeholder="My App"
                         />
                         <InputError message={errors.app_name} />
                     </div>
 
-                    <div className="md:col-span-2 grid gap-2">
-                        <Label htmlFor="meta_description">Meta Description</Label>
+                    <div className="grid gap-2 md:col-span-2">
+                        <Label htmlFor="meta_description">
+                            Meta Description
+                        </Label>
                         <Input
                             id="meta_description"
                             name="meta_description"
                             value={data.meta_description}
-                            onChange={(e) => setData('meta_description', e.target.value)}
+                            onChange={(e) =>
+                                setData('meta_description', e.target.value)
+                            }
                             placeholder="Describe your site..."
                         />
                         <InputError message={errors.meta_description} />
                     </div>
 
-                    <div className="md:col-span-2 grid gap-2">
+                    <div className="grid gap-2 md:col-span-2">
                         <Label htmlFor="meta_keywords">Meta Keywords</Label>
                         <Input
                             id="meta_keywords"
                             name="meta_keywords"
                             value={data.meta_keywords}
-                            onChange={(e) => setData('meta_keywords', e.target.value)}
+                            onChange={(e) =>
+                                setData('meta_keywords', e.target.value)
+                            }
                             placeholder="keyword1, keyword2, keyword3"
                         />
                         <InputError message={errors.meta_keywords} />
@@ -185,7 +214,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ settings }) => {
             {/* Contact Info */}
             <section className="space-y-4">
                 <h2 className="text-lg font-medium">Contact Info</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div className="grid gap-2">
                         <Label htmlFor="email">Email</Label>
                         <Input
@@ -211,7 +240,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ settings }) => {
                         <InputError message={errors.phone} />
                     </div>
 
-                    <div className="md:col-span-2 grid gap-2">
+                    <div className="grid gap-2 md:col-span-2">
                         <Label htmlFor="address">Address</Label>
                         <Input
                             id="address"
@@ -223,7 +252,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ settings }) => {
                         <InputError message={errors.address} />
                     </div>
 
-                    <div className="md:col-span-2 grid gap-2">
+                    <div className="grid gap-2 md:col-span-2">
                         <Label htmlFor="about">About</Label>
                         <Input
                             id="about"
@@ -240,34 +269,47 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ settings }) => {
             {/* Social Links */}
             <section className="space-y-4">
                 <h2 className="text-lg font-medium">Social Links</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {['facebook', 'twitter', 'pinterest', 'instagram', 'youtube'].map(
-                        (network) => {
-                            const key = network as keyof SettingsFormData;
-                            const value = data[key];
-                            const stringValue = typeof value === 'string' || typeof value === 'number' ? String(value) : '';
-                            return (
-                                <div key={network} className="grid gap-2">
-                                    <Label htmlFor={network}>{network.charAt(0).toUpperCase() + network.slice(1)}</Label>
-                                    <Input
-                                        id={network}
-                                        name={network}
-                                        value={stringValue}
-                                        onChange={(e) => setData(key, e.target.value)}
-                                        placeholder={`https://${network}.com/yourpage`}
-                                    />
-                                    <InputError message={errors[key]} />
-                                </div>
-                            );
-                        }
-                    )}
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    {[
+                        'facebook',
+                        'twitter',
+                        'pinterest',
+                        'instagram',
+                        'youtube',
+                    ].map((network) => {
+                        const key = network as keyof SettingsFormData;
+                        const value = data[key];
+                        const stringValue =
+                            typeof value === 'string' ||
+                            typeof value === 'number'
+                                ? String(value)
+                                : '';
+                        return (
+                            <div key={network} className="grid gap-2">
+                                <Label htmlFor={network}>
+                                    {network.charAt(0).toUpperCase() +
+                                        network.slice(1)}
+                                </Label>
+                                <Input
+                                    id={network}
+                                    name={network}
+                                    value={stringValue}
+                                    onChange={(e) =>
+                                        setData(key, e.target.value)
+                                    }
+                                    placeholder={`https://${network}.com/yourpage`}
+                                />
+                                <InputError message={errors[key]} />
+                            </div>
+                        );
+                    })}
                 </div>
             </section>
 
             {/* Other Settings */}
             <section className="space-y-4">
                 <h2 className="text-lg font-medium">Other Settings</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div className="grid gap-2">
                         <Label htmlFor="pagination">Pagination</Label>
                         <Input
@@ -275,7 +317,9 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ settings }) => {
                             type="number"
                             name="pagination"
                             value={data.pagination}
-                            onChange={(e) => setData('pagination', parseInt(e.target.value))}
+                            onChange={(e) =>
+                                setData('pagination', parseInt(e.target.value))
+                            }
                             placeholder="6"
                         />
                         <InputError message={errors.pagination} />
@@ -317,4 +361,3 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ settings }) => {
 };
 
 export default SettingsForm;
-
